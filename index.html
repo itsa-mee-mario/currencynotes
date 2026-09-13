@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Currency Notes — A Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">A Collection</p>
+  <h1>Currency Notes</h1>
+  <p class="standfirst">
+    Paper money from forty-one countries and territories — portraits, monuments,
+    animals and quiet civic ambition, printed at the size of a hand.
+  </p>
+  <p class="tally"><span id="tally"></span></p>
+  <p class="mode-switch"><a href="table.html">Open the light table &#8594;</a></p>
+</header>
+
+<nav class="filters" aria-label="Filter by region">
+  <div class="filter-row" id="filters"></div>
+</nav>
+
+<main>
+  <ul class="grid" id="grid"></ul>
+  <p class="empty" id="empty" hidden>Nothing in this region yet.</p>
+</main>
+
+<footer>
+  <p>A personal collection, photographed and catalogued.</p>
+  <p class="fine">Details transcribed from each note. Where a note carries no date or serial, the field is left blank.</p>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Note detail" tabindex="-1" hidden>
+  <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-arrow lb-prev" id="lbPrev" aria-label="Previous note">&#8249;</button>
+  <button class="lb-arrow lb-next" id="lbNext" aria-label="Next note">&#8250;</button>
+
+  <figure class="lb-figure">
+    <div class="lb-imgwrap"><img id="lbImg" src="" alt="" /></div>
+    <figcaption class="lb-caption">
+      <h2 id="lbTitle"></h2>
+      <p class="lb-sub" id="lbSubject"></p>
+      <dl class="lb-meta" id="lbMeta"></dl>
+      <div class="lb-actions">
+        <button id="lbFlip" class="flip" type="button">Turn over</button>
+        <span class="lb-side" id="lbSide"></span>
+      </div>
+    </figcaption>
+  </figure>
+</div>
+
+<script src="notes-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

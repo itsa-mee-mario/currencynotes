@@ -1,0 +1,410 @@
+:root {
+  --felt:      #14151a;
+  --felt-lift: #1c1e25;
+  --line:      rgba(255,255,255,.14);
+  --text:      #ece8e1;
+  --text-soft: #a09a91;
+  --text-dim:  #6b665e;
+  --gold:      #c8a96b;
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--felt);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ---------- the table ---------- */
+
+.viewport {
+  position: fixed;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 40%, #20222a 0%, #14151a 55%, #0d0e12 100%);
+}
+
+.viewport.dragging { cursor: grabbing; }
+
+.stage {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: radial-gradient(ellipse 75% 65% at 50% 50%, transparent 40%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- a note on the table ---------- */
+
+/* a note's two sides, set down together */
+.pair {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  transition: opacity .3s;
+}
+
+.note {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: rotate(var(--r));
+  transition: transform .4s cubic-bezier(.2,.7,.3,1), filter .4s;
+  will-change: transform;
+}
+
+.note img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.45),
+    0 12px 28px rgba(0,0,0,.5),
+    0 0 0 1px rgba(255,255,255,.05) inset;
+}
+
+.note::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -1.65em;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note:hover, .note:focus-visible {
+  transform: rotate(var(--r)) scale(1.07);
+  outline: none;
+  z-index: 10;
+}
+
+.note:hover img, .note:focus-visible img {
+  box-shadow:
+    0 4px 8px rgba(0,0,0,.5),
+    0 26px 60px rgba(0,0,0,.62),
+    0 0 0 1px var(--gold) inset;
+}
+
+.note:hover::after, .note:focus-visible::after { opacity: 1; }
+
+.pair.is-open { opacity: 0; pointer-events: none; }
+
+/* ---------- HUD ---------- */
+
+.hud {
+  position: fixed;
+  left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem clamp(1.25rem, 3vw, 2.5rem);
+  pointer-events: none;
+}
+
+.hud > * { pointer-events: auto; }
+
+.hud-top { top: 0; background: linear-gradient(to bottom, rgba(10,11,14,.75), transparent); }
+.hud-bottom { bottom: 0; background: linear-gradient(to top, rgba(10,11,14,.75), transparent); }
+
+.hud-title { display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap; }
+
+.mark {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  letter-spacing: .01em;
+}
+
+.sub, .hint {
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.hud-link {
+  white-space: nowrap;
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color .2s, border-color .2s;
+}
+
+.hud-link:hover { color: var(--text); border-bottom-color: var(--gold); }
+
+.zoom { display: flex; align-items: center; gap: .25rem; }
+
+.zoom button {
+  appearance: none;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--line);
+  color: var(--text-soft);
+  font-family: var(--sans);
+  font-size: .7rem;
+  letter-spacing: .1em;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  padding: 0 .6rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+
+.zoom button:hover { background: rgba(255,255,255,.09); color: var(--text); border-color: var(--text-dim); }
+
+.hint { transition: opacity .6s; }
+.hint.fade { opacity: 0; }
+
+/* ---------- focused note ---------- */
+
+.focus {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  padding: clamp(4.5rem, 8vh, 6rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+.focus[hidden] { display: none; }
+
+.focus-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8,9,12,.86);
+  backdrop-filter: blur(6px);
+  animation: fade .3s ease;
+}
+
+@keyframes fade { from { opacity: 0; } }
+
+@media (min-width: 62rem) {
+  .focus {
+    grid-template-columns: minmax(0, 1.5fr) minmax(17rem, .8fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: clamp(2rem, 4vw, 4rem);
+  }
+}
+
+.focus-card-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2200px;
+  min-height: 0;
+  /* the entry animation lives here, not on .card3d — it would otherwise
+     override the flip transform and flash the wrong face when opening a back */
+  animation: cardIn .5s cubic-bezier(.2,.7,.3,1);
+}
+
+.card3d {
+  position: relative;
+  width: 100%;
+  max-width: 46rem;
+  transform-style: preserve-3d;
+  transition: transform .85s cubic-bezier(.4,.05,.2,1);
+}
+
+@keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(.96); } }
+
+.card3d.flipped { transform: rotateY(180deg); }
+
+.face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.face img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(58vh, 30rem);
+  object-fit: contain;
+  border-radius: 3px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 40px 90px rgba(0,0,0,.65);
+}
+
+.face-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.face-back img { height: 100%; }
+
+/* inspect: scale up and let the pointer drive a pan */
+.card3d.inspect {
+  transition: transform .5s cubic-bezier(.2,.7,.3,1);
+  cursor: zoom-out;
+}
+
+.focus-info {
+  position: relative;
+  z-index: 1;
+  max-width: 26rem;
+  animation: infoIn .5s .08s cubic-bezier(.2,.7,.3,1) backwards;
+}
+
+@keyframes infoIn { from { opacity: 0; transform: translateY(12px); } }
+
+.fi-eyebrow {
+  margin: 0 0 .7rem;
+  font-size: .65rem;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.focus-info h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.fi-subject {
+  margin: .65rem 0 0;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.fi-meta {
+  margin: 1.6rem 0 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .5rem 1.2rem;
+  font-size: .8rem;
+}
+
+.fi-meta dt {
+  color: var(--text-dim);
+  font-size: .64rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding-top: .16rem;
+}
+
+.fi-meta dd { margin: 0; overflow-wrap: anywhere; }
+
+.fi-actions { margin-top: 1.7rem; display: flex; gap: .6rem; flex-wrap: wrap; }
+
+.pill {
+  appearance: none;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .55rem 1.25rem;
+  font-family: var(--sans);
+  font-size: .68rem;
+  font-weight: 400;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+.pill:hover { background: rgba(255,255,255,.1); border-color: var(--gold); }
+.pill[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #17181d; }
+.pill[disabled] { opacity: .3; cursor: default; }
+.pill[disabled]:hover { background: rgba(255,255,255,.04); border-color: var(--line); }
+
+.fi-nav {
+  margin: 1.6rem 0 0;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+kbd {
+  font-family: var(--sans);
+  font-size: .6rem;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: .1rem .32rem;
+  margin: 0 .1rem;
+}
+
+.focus-close, .focus-arrow {
+  position: fixed;
+  z-index: 2;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  line-height: 1;
+  transition: color .2s;
+}
+
+.focus-close:hover, .focus-arrow:hover { color: var(--text); }
+.focus-close { top: 1.35rem; right: 1.6rem; font-size: 2rem; padding: .25rem .5rem; }
+
+.focus-arrow { top: 50%; transform: translateY(-50%); font-size: 2.6rem; padding: .5rem 1rem; }
+.focus-prev { left: .25rem; }
+.focus-next { right: .25rem; }
+
+@media (max-width: 62rem) {
+  .focus-arrow { top: auto; bottom: 1rem; transform: none; }
+  .face img { max-height: 34vh; }
+  .fi-nav { display: none; }
+}
+
+/* the hint describes a mouse; on touch the gestures are the obvious ones */
+@media (max-width: 40rem) {
+  .hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

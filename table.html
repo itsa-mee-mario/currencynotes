@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>The Light Table — Currency Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="table.css">
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage"></div>
+</div>
+
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="hud hud-top">
+  <div class="hud-title">
+    <span class="mark">Currency Notes</span>
+    <span class="sub" id="hudCount"></span>
+  </div>
+  <a class="hud-link" href="index.html">Gallery &#8594;</a>
+</header>
+
+<div class="hud hud-bottom">
+  <div class="zoom">
+    <button id="zoomOut" aria-label="Zoom out">&minus;</button>
+    <button id="zoomFit" aria-label="Fit to screen">Fit</button>
+    <button id="zoomIn" aria-label="Zoom in">+</button>
+  </div>
+  <p class="hint" id="hint">Drag to move &middot; scroll to zoom &middot; click a note</p>
+</div>
+
+<!-- focused note -->
+<div class="focus" id="focus" hidden>
+  <div class="focus-scrim" id="focusScrim"></div>
+
+  <div class="focus-card-wrap">
+    <div class="card3d" id="card3d">
+      <div class="face face-front"><img id="faceFront" src="" alt="" /></div>
+      <div class="face face-back"><img id="faceBack" src="" alt="" /></div>
+    </div>
+  </div>
+
+  <aside class="focus-info" id="focusInfo">
+    <p class="fi-eyebrow" id="fiRegion"></p>
+    <h2 id="fiTitle"></h2>
+    <p class="fi-subject" id="fiSubject"></p>
+    <dl class="fi-meta" id="fiMeta"></dl>
+    <div class="fi-actions">
+      <button id="btnFlip" class="pill">Turn over</button>
+      <button id="btnZoom" class="pill">Inspect</button>
+    </div>
+    <p class="fi-nav"><span id="fiPos"></span> &middot; <kbd>&larr;</kbd><kbd>&rarr;</kbd> to browse &middot; <kbd>esc</kbd> to close</p>
+  </aside>
+
+  <button class="focus-close" id="focusClose" aria-label="Close">&times;</button>
+  <button class="focus-arrow focus-prev" id="focusPrev" aria-label="Previous">&#8249;</button>
+  <button class="focus-arrow focus-next" id="focusNext" aria-label="Next">&#8250;</button>
+</div>
+
+<script src="notes-data.js"></script>
+<script src="table.js"></script>
+</body>
+</html>
